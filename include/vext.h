@@ -4,16 +4,16 @@
 #include "./utils.h"
 
 #define ESC_KEY 27
-#define COMMAND_BUFFER_SIZE 2
 
 enum State {
     NAVIGATE,
     EDIT
 };
 
+int detect_state_change(char ch, enum State *state);
+void vext_dispatch_command(struct CommandNode **head_node);
+void vext_navigate(char ch, struct Cursor *cursor, struct CommandNode **head_node);
+void vext_edit(char ch, struct Cursor *cursor);
 void vext_core();
-void vext_dispatch_command(char *command_buffer);
-void vext_navigate(char ch, struct Cursor *cursor, char *command_buffer);
-void vext_edit(char ch);
 
 #endif // VEXT_H_
