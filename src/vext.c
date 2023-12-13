@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define QUIT_COMMAND ":q"
 
@@ -19,6 +20,36 @@ void vext_dispatch_command(struct CommandNode** head_node) {
 
     free(command_string);
     free_command_list(head_node);
+}
+
+// TODO: remove the use of this function in different parts of the code.
+void handle_command_subwindow(bool free_command_subwindow, char ch) {
+    static WINDOW* command_window = NULL;
+    static struct Cursor* command_window_cursor = NULL;
+
+    if (command_window == NULL && command_window_cursor == NULL) {
+        int main_window_max_y = getmaxy(stdscr) - 1;
+        command_window_cursor = malloc(sizeof(struct Cursor));
+
+        command_window = subwin(stdscr, 0, 0, main_window_max_y, 0);
+        *command_window_cursor = create_new_cursor();
+    }
+
+    if (free_command_subwindow) {
+        wclear(command_window);
+        delwin(command_window);
+        command_window = NULL;
+
+        free(command_window_cursor);
+        command_window_cursor = NULL;
+
+        return;
+    }
+
+    mvwaddch(command_window, command_window_cursor->y, command_window_cursor->x, ch);
+    wrefresh(command_window);
+
+    command_window_cursor->x++;
 }
 
 void vext_navigate(char ch, struct Cursor* cursor, struct CommandNode** head_node) {
@@ -39,9 +70,11 @@ void vext_navigate(char ch, struct Cursor* cursor, struct CommandNode** head_nod
             break;
         case '\n':
             vext_dispatch_command(head_node);
+            handle_command_subwindow(true, ' ');
             break;
         default:
             list_push_command_ch(ch, head_node);
+            handle_command_subwindow(false, ch);
             break;
     }
 }
@@ -54,6 +87,7 @@ void vext_edit(char ch, struct Cursor *cursor) {
 int detect_state_change(char ch, enum State *state) {
     if (ch == ESC_KEY) {
         *state = NAVIGATE;
+        handle_command_subwindow(true, ' ');
         return 1;
     }
 
