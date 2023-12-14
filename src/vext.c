@@ -4,11 +4,15 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #define QUIT_COMMAND ":q"
 
+enum State state = NAVIGATE;
 static int exit_vext = 0;
+
+static WINDOW* command_window = NULL;
+static struct Cursor* command_window_cursor = NULL;
+// TODO: create a global and static instnace of the default cursor.
 
 void vext_dispatch_command(struct CommandNode** head_node) {
     char* command_string = create_command_string(*head_node);
@@ -22,37 +26,27 @@ void vext_dispatch_command(struct CommandNode** head_node) {
     free_command_list(head_node);
 }
 
-// TODO: remove the use of this function in different parts of the code.
-void handle_command_subwindow(bool free_command_subwindow, char ch) {
-    static WINDOW* command_window = NULL;
-    static struct Cursor* command_window_cursor = NULL;
-
-    if (command_window == NULL && command_window_cursor == NULL) {
-        int main_window_max_y = getmaxy(stdscr) - 1;
-        command_window_cursor = malloc(sizeof(struct Cursor));
-
-        command_window = subwin(stdscr, 0, 0, main_window_max_y, 0);
-        *command_window_cursor = create_new_cursor();
-    }
-
-    if (free_command_subwindow) {
-        wclear(command_window);
-        delwin(command_window);
-        command_window = NULL;
-
-        free(command_window_cursor);
-        command_window_cursor = NULL;
-
-        return;
-    }
-
+void command_window_insert_ch(char ch) {
     mvwaddch(command_window, command_window_cursor->y, command_window_cursor->x, ch);
     wrefresh(command_window);
 
     command_window_cursor->x++;
 }
 
-void vext_navigate(char ch, struct Cursor* cursor, struct CommandNode** head_node) {
+void command_window_clear() {
+    command_window_cursor->x = 0;
+    wclear(command_window);
+    wrefresh(command_window);
+}
+
+void command_window_remove_ch() {
+    mvwdelch(command_window, command_window_cursor->y, command_window_cursor->x);
+    wrefresh(command_window);
+
+    command_window_cursor->x--;
+}
+
+void vext_navigate(char ch, struct Cursor* cursor) {
     switch(ch) {
         case 'j':
             cursor->x++;
@@ -68,31 +62,35 @@ void vext_navigate(char ch, struct Cursor* cursor, struct CommandNode** head_nod
         case 'l':
             cursor->y++;
             break;
-        case '\n':
-            vext_dispatch_command(head_node);
-            handle_command_subwindow(true, ' ');
-            break;
         default:
-            list_push_command_ch(ch, head_node);
-            handle_command_subwindow(false, ch);
-            break;
+            // TODO: implement goto
+            state = COMMAND_EDIT;
     }
 }
 
-void vext_edit(char ch, struct Cursor *cursor) {
+void vext_command_edit(char ch, struct CommandNode** head_node) {
+    if (ch != '\n') {
+        list_push_command_ch(ch, head_node);
+        command_window_insert_ch(ch);
+    } else {
+        vext_dispatch_command(head_node);
+    }
+}
+
+void vext_default_edit(char ch, struct Cursor *cursor) {
     addch(ch);
     cursor->y++;
 }
 
-int detect_state_change(char ch, enum State *state) {
+int detect_state_change(char ch) {
     if (ch == ESC_KEY) {
-        *state = NAVIGATE;
-        handle_command_subwindow(true, ' ');
+        command_window_clear();
+        state = NAVIGATE;
         return 1;
     }
 
     if (ch == 'i') {
-        *state = EDIT;
+        state = DEFAULT_EDIT;
         return 1;
     }
 
@@ -100,17 +98,20 @@ int detect_state_change(char ch, enum State *state) {
 }
 
 void vext_core() {
-    enum State state = NAVIGATE;
     struct Cursor cursor = create_new_cursor();
     struct CommandNode *head_node = allocate_command_head();
     char ch;
+
+    command_window = subwin(stdscr, 0, 0, getmaxy(stdscr) - 1, 0);
+    command_window_cursor = malloc(sizeof(struct Cursor));
+    *command_window_cursor = create_new_cursor();
 
     move(cursor.x, cursor.y);
 
     while(1) {
         ch = getch();
 
-        int has_state_changed = detect_state_change(ch, &state);
+        int has_state_changed = detect_state_change(ch);
         if (has_state_changed == 1) {
             free_command_list(&head_node);
             continue;
@@ -118,10 +119,14 @@ void vext_core() {
 
         switch(state) {
             case NAVIGATE:
-                vext_navigate(ch, &cursor, &head_node);
+                vext_navigate(ch, &cursor);
                 break;
-            case EDIT:
-                vext_edit(ch, &cursor);
+            case DEFAULT_EDIT:
+                vext_default_edit(ch, &cursor);
+                break;
+            case COMMAND_EDIT:
+                // TODO: implement goto.
+                vext_command_edit(ch, &head_node);
                 break;
             default:
                 exit(1);
@@ -134,4 +139,7 @@ void vext_core() {
         move(cursor.x, cursor.y);
         refresh();
     }
+
+    delwin(command_window);
+    free(command_window_cursor);
 }

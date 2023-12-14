@@ -8,14 +8,18 @@
 
 enum State {
     NAVIGATE,
-    EDIT
+    DEFAULT_EDIT,
+    COMMAND_EDIT
 };
 
 void vext_core();
-void vext_edit(char ch, struct Cursor *cursor);
-void vext_navigate(char ch, struct Cursor *cursor, struct CommandNode **head_node);
-void vext_dispatch_command(struct CommandNode **head_node);
-int detect_state_change(char ch, enum State *state);
-void handle_command_subwindow(bool free_command_subwindow, char ch);
+void vext_default_edit(char ch, struct Cursor* cursor);
+void vext_command_edit(char ch, struct CommandNode **head_node);
+void vext_navigate(char ch, struct Cursor* cursor);
+void vext_dispatch_command(struct CommandNode** head_node);
+int detect_state_change(char ch);
+void command_window_insert_ch(char ch);
+void command_window_clear();
+void command_window_remove_ch();
 
 #endif // VEXT_H_
