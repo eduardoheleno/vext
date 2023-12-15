@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #define ESC_KEY 27
+#define BACKSPACE_KEY 127
 
 enum State {
     NAVIGATE,
@@ -14,7 +15,7 @@ enum State {
 
 void vext_core();
 void vext_default_edit(char ch, struct Cursor* cursor);
-void vext_command_edit(char ch, struct CommandNode **head_node);
+void vext_command_edit(char ch);
 void vext_navigate(char ch, struct Cursor* cursor);
 void vext_dispatch_command(struct CommandNode** head_node);
 int detect_state_change(char ch);

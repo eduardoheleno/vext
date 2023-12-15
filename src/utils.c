@@ -78,3 +78,14 @@ void free_command_list(struct CommandNode** head_node) {
 
     *head_node = NULL;
 }
+
+// TODO: fix this function.
+void pop_command(struct CommandNode** head_node) {
+    struct CommandNode* tail_node = *head_node;
+
+    while (tail_node->next_node != NULL) {
+        tail_node = tail_node->next_node;
+    }
+
+    free(tail_node);
+}

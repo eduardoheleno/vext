@@ -8,6 +8,7 @@ int main() {
     noecho();
     keypad(stdscr, TRUE);
     set_escdelay(1);
+    cbreak();
 
     vext_core();
 
