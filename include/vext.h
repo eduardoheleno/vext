@@ -13,7 +13,7 @@ enum State {
     COMMAND_EDIT
 };
 
-void vext_core();
+void vext_core(char* file_path);
 void vext_default_edit(char ch, struct Cursor* cursor);
 void vext_command_edit(char ch);
 void vext_navigate(char ch, struct Cursor* cursor);

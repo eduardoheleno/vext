@@ -1,6 +1,8 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "../include/utils.h"
 #include "../include/ncurses/ncurses.h"
-#include <stdlib.h>
 
 struct Cursor create_new_cursor() {
     struct Cursor cursor;
@@ -97,4 +99,39 @@ void pop_command(struct CommandNode** head_node) {
 
     free(next_tail_node);
     current_tail_node->next_node = NULL;
+}
+
+struct Line* allocate_line(char line_buffer[BUFFER_SIZE]) {
+    char* owned_buffer = malloc(BUFFER_SIZE);
+    strcpy(owned_buffer, line_buffer);
+
+    struct Line* line = malloc(sizeof(struct Line));
+    line->content = owned_buffer;
+    line->size = strlen(line_buffer);
+    line->prev_line = NULL;
+    line->next_line = NULL;
+
+    return line;
+}
+
+void allocate_file_chunks(FILE* file, struct Line** head_line) {
+    char line_buffer[BUFFER_SIZE];
+    struct Line* current_line = NULL;
+    struct Line* prev_line = NULL;
+
+    while (fgets(line_buffer, BUFFER_SIZE, file) != NULL) {
+        struct Line* line = allocate_line(line_buffer);
+        if (*head_line == NULL) {
+            *head_line = line;
+            prev_line = *head_line;
+        } else {
+            current_line = line;
+
+            prev_line->next_line = current_line;
+            current_line->prev_line = prev_line;
+
+            prev_line = current_line;
+            current_line = current_line->next_line;
+        }
+    }
 }

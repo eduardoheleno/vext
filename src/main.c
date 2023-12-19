@@ -1,18 +1,25 @@
 #include <stdlib.h>
+
 #include "../include/ncurses/ncurses.h"
 #include "../include/vext.h"
 #include "../include/utils.h"
 
-int main() {
-    initscr();
-    noecho();
-    keypad(stdscr, TRUE);
-    set_escdelay(1);
-    cbreak();
+int main(int argc, char* argv[]) {
+    if (argv[1] != NULL) {
+        char* file_path = argv[1];
 
-    vext_core();
+        initscr();
+        noecho();
+        keypad(stdscr, TRUE);
+        set_escdelay(1);
+        cbreak();
 
-    endwin();
+        vext_core(file_path);
 
-    return 0;
+        endwin();
+        return 0;
+    }
+
+    printf(FILE_PATH_NOT_GIVEN);
+    return 1;
 }

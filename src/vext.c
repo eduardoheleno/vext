@@ -7,12 +7,15 @@
 
 #define QUIT_COMMAND ":q"
 
+struct Line* head_line = NULL;
 struct CommandNode* head_node = NULL;
 enum State state = NAVIGATE;
 static int exit_vext = 0;
 
 static WINDOW* command_window = NULL;
 static struct Cursor* command_window_cursor = NULL;
+
+// TODO: fix -> if a line is bigger than the buffer size, the program interprets that the next line buffer will be a new line.
 
 void vext_dispatch_command() {
     char* command_string = create_command_string(head_node);
@@ -120,7 +123,22 @@ int detect_state_change(char ch) {
     return 0;
 }
 
-void vext_core() {
+void vext_core(char* file_path) {
+    FILE* file = fopen(file_path, "r+");
+    if (file == NULL) {
+        perror("File error");
+        exit(1);
+    }
+
+    allocate_file_chunks(file, &head_line);
+
+    struct Line* current_line = head_line;
+    while (current_line != NULL) {
+        printw("%s", current_line->content);
+        refresh();
+        current_line = current_line->next_line;
+    }
+
     struct Cursor cursor = create_new_cursor();
     char ch;
 
