@@ -15,7 +15,7 @@ struct CommandNode* allocate_command_head() {
     return head_node;
 }
 
-void list_push_command_ch(char command_ch, struct CommandNode **head_node) {
+void list_push_command_ch(char command_ch, struct CommandNode** head_node) {
     struct CommandNode *command_ch_node = malloc(sizeof(struct CommandNode));
     command_ch_node->command_ch = command_ch;
     command_ch_node->next_node = NULL;
@@ -79,15 +79,14 @@ void free_command_list(struct CommandNode** head_node) {
     *head_node = NULL;
 }
 
-// TODO: test this function.
 void pop_command(struct CommandNode** head_node) {
-    struct CommandNode* next_tail_node = (*head_node)->next_node;
     struct CommandNode* current_tail_node = *head_node;
-
     if (current_tail_node == NULL) return;
+
+    struct CommandNode* next_tail_node = (*head_node)->next_node;
     if (next_tail_node == NULL) {
         free(current_tail_node);
-        head_node = NULL;
+        *head_node = NULL;
         return;
     }
 

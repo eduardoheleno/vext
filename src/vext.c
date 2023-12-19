@@ -16,8 +16,6 @@ static struct Cursor* command_window_cursor = NULL;
 
 void vext_dispatch_command(struct CommandNode** head_node) {
     char* command_string = create_command_string(*head_node);
-    printw("%s", command_string);
-    size_t t = command_list_size(*head_node);
 
     if (strcmp(command_string, QUIT_COMMAND) == 0) {
         exit_vext = 1;
@@ -25,6 +23,7 @@ void vext_dispatch_command(struct CommandNode** head_node) {
 
     free(command_string);
     free_command_list(head_node);
+    state = NAVIGATE;
 }
 
 void command_window_insert_ch(char ch) {
@@ -41,12 +40,16 @@ void command_window_clear() {
 }
 
 void command_window_remove_ch() {
-    if (command_window_cursor->x == 0) return;
-
     command_window_cursor->x--;
+
     pop_command(&head_node);
     mvwdelch(command_window, command_window_cursor->y, command_window_cursor->x);
     wrefresh(command_window);
+
+    if (command_window_cursor->x == 0) {
+        state = NAVIGATE;
+        return;
+    }
 }
 
 void vext_navigate(char ch, struct Cursor* cursor) {
