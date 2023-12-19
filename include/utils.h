@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#define INVALID_COMMAND "Unknown command"
+
 struct Cursor {
     int x;
     int y;

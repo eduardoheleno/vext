@@ -17,7 +17,7 @@ void vext_core();
 void vext_default_edit(char ch, struct Cursor* cursor);
 void vext_command_edit(char ch);
 void vext_navigate(char ch, struct Cursor* cursor);
-void vext_dispatch_command(struct CommandNode** head_node);
+void vext_dispatch_command();
 int detect_state_change(char ch);
 void command_window_insert_ch(char ch);
 void command_window_clear();

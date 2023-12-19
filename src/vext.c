@@ -14,23 +14,34 @@ static int exit_vext = 0;
 static WINDOW* command_window = NULL;
 static struct Cursor* command_window_cursor = NULL;
 
-void vext_dispatch_command(struct CommandNode** head_node) {
-    char* command_string = create_command_string(*head_node);
+void vext_dispatch_command() {
+    char* command_string = create_command_string(head_node);
 
     if (strcmp(command_string, QUIT_COMMAND) == 0) {
         exit_vext = 1;
+        goto free_command;
     }
 
+    command_window_clear();
+    wprintw(command_window, INVALID_COMMAND);
+    wrefresh(command_window);
+
+free_command:
     free(command_string);
-    free_command_list(head_node);
+    free_command_list(&head_node);
     state = NAVIGATE;
+    return;
 }
 
 void command_window_insert_ch(char ch) {
-    mvwaddch(command_window, command_window_cursor->y, command_window_cursor->x, ch);
+    command_window_clear();
+
+    char* command_string = create_command_string(head_node);
+    size_t command_size = command_list_size(head_node);
+    wprintw(command_window, "%s", command_string);
     wrefresh(command_window);
 
-    command_window_cursor->x++;
+    command_window_cursor->x = command_size;
 }
 
 void command_window_clear() {
@@ -78,7 +89,6 @@ void vext_command_edit(char ch) {
     switch (ch) {
         case '\n':
             vext_dispatch_command(&head_node);
-            command_window_clear();
             break;
         case BACKSPACE_KEY:
             command_window_remove_ch();
