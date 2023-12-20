@@ -8,6 +8,7 @@ struct Cursor create_new_cursor() {
     struct Cursor cursor;
     cursor.x = 0;
     cursor.y = 0;
+    cursor.max_y = 0;
 
     return cursor;
 }
@@ -114,7 +115,7 @@ struct Line* allocate_line(char line_buffer[BUFFER_SIZE]) {
     return line;
 }
 
-void allocate_file_chunks(FILE* file, struct Line** head_line) {
+void allocate_file_chunks(FILE* file, struct Line** head_line, struct Line** line_tracker) {
     char line_buffer[BUFFER_SIZE];
     struct Line* current_line = NULL;
     struct Line* prev_line = NULL;
@@ -123,6 +124,7 @@ void allocate_file_chunks(FILE* file, struct Line** head_line) {
         struct Line* line = allocate_line(line_buffer);
         if (*head_line == NULL) {
             *head_line = line;
+            *line_tracker = *head_line;
             prev_line = *head_line;
         } else {
             current_line = line;

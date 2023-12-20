@@ -12,6 +12,7 @@
 struct Cursor {
     int x;
     int y;
+    int max_y;
 };
 
 struct Line {
@@ -37,6 +38,6 @@ void free_command_list(struct CommandNode** head_node);
 void pop_command(struct CommandNode** head_node);
 
 struct Line* allocate_line(char line_buffer[BUFFER_SIZE]);
-void allocate_file_chunks(FILE* file, struct Line** head_line);
+void allocate_file_chunks(FILE* file, struct Line** head_line, struct Line** line_tracker);
 
 #endif // UTILS_H_

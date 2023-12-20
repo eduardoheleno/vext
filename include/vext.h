@@ -6,6 +6,7 @@
 
 #define ESC_KEY 27
 #define BACKSPACE_KEY 127
+#define DOLLAR_SIGN_KEY 36
 
 enum State {
     NAVIGATE,
@@ -18,6 +19,7 @@ void vext_default_edit(char ch, struct Cursor* cursor);
 void vext_command_edit(char ch);
 void vext_navigate(char ch, struct Cursor* cursor);
 void vext_dispatch_command();
+void vext_render_lines(struct Line* head_line);
 int detect_state_change(char ch);
 void command_window_insert_ch(char ch);
 void command_window_clear();
